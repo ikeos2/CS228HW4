@@ -2,7 +2,10 @@ package edu.iastate.cs228.hw4;
 
 /**
  *  
- * @author
+ * @author Alex Orman
+ * with help from
+ * http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
+ * http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
  *
  */
 
@@ -97,6 +100,8 @@ public class ConvexHull {
 			points[i] = new Point(50 - rand.nextInt(101),
 					50 - rand.nextInt(101));
 		}
+
+		numPoints = n;
 	}
 
 	/**
@@ -111,36 +116,40 @@ public class ConvexHull {
 	 * 
 	 * @param inputFileName
 	 * @throws FileNotFoundException
-	 * @throws InputMismatchException when the input file contains an odd number of integers
+	 * @throws InputMismatchException
+	 *             when the input file contains an odd number of integers
 	 */
 	@SuppressWarnings("resource")
-	public ConvexHull(String inputFileName) throws FileNotFoundException, InputMismatchException {
-		//scan in the file, parse into point objects.
-        File file = new File(inputFileName);
-        //check for file
-        if(!file.exists()) throw new FileNotFoundException();
+	public ConvexHull(String inputFileName) throws FileNotFoundException,
+			InputMismatchException {
+		// scan in the file, parse into point objects.
+		File file = new File(inputFileName);
+		// check for file
+		if (!file.exists())
+			throw new FileNotFoundException();
 		Scanner in = new Scanner(file);
-        
-        //grab up all the ints
-        ArrayList<Integer> temp = new ArrayList<Integer>();
-        while(in.hasNextInt()){
-        	temp.add(in.nextInt());
-        }
-        
-        //ensure we have enough ints
-        if(temp.size() % 2 != 0) throw new InputMismatchException();
-        
-        points = new Point[temp.size()/2];
-        
-        int j = 0;
-        for(int i = 0; i < temp.size()/2; i+=2){
-        	points[j] = new Point(temp.get(i), temp.get(i+1));
-        	j++;
-        }
-        
-        numPoints = points.length;
-        in.close();
-			
+
+		// grab up all the ints
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		while (in.hasNextInt()) {
+			temp.add(in.nextInt());
+		}
+
+		// ensure we have enough ints
+		if (temp.size() % 2 != 0)
+			throw new InputMismatchException();
+
+		points = new Point[temp.size() / 2];
+
+		int j = 0;
+		for (int i = 0; i < temp.size() / 2; i += 2) {
+			points[j] = new Point(temp.get(i), temp.get(i + 1));
+			j++;
+		}
+
+		numPoints = points.length;
+		in.close();
+
 	}
 
 	// -------------
@@ -179,18 +188,34 @@ public class ConvexHull {
 	 */
 	public void GrahamScan() {
 		// TODO
-		if(pointsToScan.length == 1){
+		if (pointsToScan.length == 1) {
 			hullVertices = pointsToScan;
 			numHullVertices = 1;
 		}
-		if(pointsToScan.length == 2){
-			//TODO
+		if (pointsToScan.length == 2) {
+			// TODO
 			numHullVertices = 2;
 		}
 		lowestPoint();
 		setUpScan();
-		
-		
+
+		// Graham's scan, as implemented at
+		// http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
+		PointComparator t = new PointComparator(lowestPoint);
+		// push top 3 points to stack
+		vertexStack.push(pointsToScan[0]);
+		vertexStack.push(pointsToScan[1]);
+		vertexStack.push(pointsToScan[2]);
+
+		for (int i = 3; i < pointsToScan.length; i++) {
+			// Keep removing top while the angle formed by points next-to-top,
+			// top, and points[i] makes a non-left turn
+			// while(angle is
+			while (orientation(nextToTop(), vertexStack.peek(), points[i]) != 2)
+				vertexStack.pop();
+			vertexStack.push(points[i]);
+		}
+
 		quickSort();
 	}
 
@@ -216,6 +241,16 @@ public class ConvexHull {
 		String out = "";
 
 		return out;
+	}
+
+	// from http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
+	int orientation(Point p, Point q, Point r) {
+		int val = (q.getY() - p.getY()) * (r.getX() - q.getX())
+				- (q.getX() - p.getX()) * (r.getY() - q.getY());
+
+		if (val == 0)
+			return 0; // colinear
+		return (val > 0) ? 1 : 2; // clock or counterclock wise
 	}
 
 	public String toString(int i) {
@@ -270,7 +305,8 @@ public class ConvexHull {
 	 * 
 	 * Called only after setUpScan() or GrahamScan().
 	 * 
-	 * @throws IllegalStateException if pointsNoDuplicate[] has not been populated.
+	 * @throws IllegalStateException
+	 *             if pointsNoDuplicate[] has not been populated.
 	 */
 	public void pointsToFile() throws IllegalStateException {
 		// TODO
@@ -285,7 +321,8 @@ public class ConvexHull {
 	 * 
 	 * Called only after setUpScan() or GrahamScan().
 	 * 
-	 * @throws IllegalStateException if pointsToScan[] has not been populated.
+	 * @throws IllegalStateException
+	 *             if pointsToScan[] has not been populated.
 	 */
 	public void pointsScannedToFile() throws IllegalStateException {
 		// TODO
@@ -307,7 +344,7 @@ public class ConvexHull {
 	 * Ought to be private, but is made public for testing convenience.
 	 */
 	public void lowestPoint() {
-		//TODO test this
+		// TODO test this
 		Point small = points[0];
 		for (int i = 1; i < points.length; i++) {
 			if (points[i].getY() < small.getY())
@@ -342,7 +379,7 @@ public class ConvexHull {
 	 *
 	 */
 	public void setUpScan() {
-		//TODO test this
+		// TODO test this
 		quickSort();
 
 		// eliminate duplicates
@@ -357,14 +394,19 @@ public class ConvexHull {
 			}
 		}
 
+		resize(pointsNoDuplicate);
+
 		PointComparator t = new PointComparator(lowestPoint);
 		// allocate worst case space for array
 		pointsToScan = new Point[pointsNoDuplicate.length];
 		// eliminate duplicate angle points
 		for (int i = 0; i < pointsNoDuplicate.length - 1; i++) {
-			if (t.comparePolarAngle(pointsNoDuplicate[i], pointsNoDuplicate[i + 1]) == 0) {
-				// The angle is the same, keep only the one with the greater distance
-				if (t.compareDistance(pointsNoDuplicate[i], pointsNoDuplicate[i + 1]) < 0) {
+			if (t.comparePolarAngle(pointsNoDuplicate[i],
+					pointsNoDuplicate[i + 1]) == 0) {
+				// The angle is the same, keep only the one with the greater
+				// distance
+				if (t.compareDistance(pointsNoDuplicate[i],
+						pointsNoDuplicate[i + 1]) < 0) {
 					// point 1 is closer, keep point 2
 					pointsToScan[i] = pointsNoDuplicate[i + 1];
 					i++;
@@ -377,6 +419,8 @@ public class ConvexHull {
 				// Different angles
 				pointsToScan[i] = pointsNoDuplicate[i];
 			}
+
+			resize(pointsToScan);
 
 			numPointsToScan = pointsToScan.length;
 		}
@@ -392,14 +436,46 @@ public class ConvexHull {
 	 */
 	public void quickSort() {
 		//TODO
+		int right = points.length;
+		int left = 0;
+		Object[] a = points;
+		quicksort(a,left,right);
 	}
 
+	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
+	public void quicksort(Object[] a, int left, int right) {
+		int size = right - left + 1;
+		switch (size) {
+		case 0:
+		case 1:
+			break;
+		case 2:
+			if (compare(a[left], a[right]) > 0)
+				swap(a, left, right);
+			break;
+		case 3:
+			if (compare(a[left], a[right - 1]) > 0)
+				swap(a, left, right - 1);
+			if (compare(a[left], a[right]) > 0)
+				swap(a, left, right);
+			if (compare(a[left + 1], a[right]) > 0)
+				swap(a, left + 1, right);
+			break;
+		default:
+			int median = median(a, left, right);
+			int partition = partition(a, left, right, median);
+			quicksort(a, left, partition - 1);
+			quicksort(a, partition + 1, right);
+		}
+	}
 
 	/**
 	 * Operates on the subarray of points[] with indices between first and last.
 	 * 
-	 * @param first starting index of the subarray
-	 * @param last ending index of the subarray
+	 * @param first
+	 *            starting index of the subarray
+	 * @param last
+	 *            ending index of the subarray
 	 */
 	private void quickSortRec(int first, int last) {
 		// TODO
@@ -413,11 +489,81 @@ public class ConvexHull {
 	 * @return
 	 */
 	private int partition(int first, int last) {
-		//TODO
+		// TODO
+		partition(points, 0, points.length, points.length / 2);
 		return 0;
 	}
 
-	private void resize(Object[] array){
-		//removes any null values from the list, shrinks to fit only real values
+	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
+	private int partition(Object[] a, int left, int right, int pivotIndex) {
+		int leftIndex = left;
+		int rightIndex = right - 1;
+		while (true) {
+			while (compare(a[++leftIndex], a[pivotIndex]) < 0)
+				;
+			while (compare(a[--rightIndex], a[pivotIndex]) > 0)
+				;
+			if (leftIndex >= rightIndex) {
+				break; // pointers cross so partition done
+			} else {
+				swap(a, leftIndex, rightIndex);
+			}
+		}
+		swap(a, leftIndex, right - 1); // restore pivot
+		return leftIndex; // return pivot location
+	}
+
+	private void resize(Object[] array) {
+		// TODO test this
+		// removes any null values from the list, shrinks to fit only real
+		// values
+		if (array == null)
+			return;
+		if (array.length == 1)
+			return;
+
+		ArrayList<Object> list = new ArrayList<Object>();
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] != null) {
+				list.add(array[i]);
+			}
+		}
+		array = list.toArray(new Point[list.size()]);
+
+	}
+
+	// A utility function to find next to top in a stack
+	// from http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
+	Point nextToTop() {
+		Point p = vertexStack.peek();
+		vertexStack.pop();
+		Point res = vertexStack.peek();
+		vertexStack.push(p);
+		return res;
+	}
+
+	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
+	private void swap(Object array[], int left, int right) {
+		Object c = array[left];
+		array[left] = array[right];
+		array[right] = c;
+	}
+
+	private int compare(Object a, Object b) {
+		PointComparator t = new PointComparator(lowestPoint);
+		return t.compare((Point) a, (Point) b);
+	}
+
+	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
+	private int median(Object[] a, int left, int right) {
+		int center = (left + right) / 2;
+		if (compare(a[left], a[center]) > 0)
+			swap(a, left, center);
+		if (compare(a[left], a[right]) > 0)
+			swap(a, left, right);
+		if (compare(a[center], a[right]) > 0)
+			swap(a, center, right);
+		swap(a, center, right - 1);
+		return right - 1;
 	}
 }
