@@ -111,12 +111,36 @@ public class ConvexHull {
 	 * 
 	 * @param inputFileName
 	 * @throws FileNotFoundException
-	 * @throws InputMismatchException
-	 *             when the input file contains an odd number of integers
+	 * @throws InputMismatchException when the input file contains an odd number of integers
 	 */
-	public ConvexHull(String inputFileName) throws FileNotFoundException,
-			InputMismatchException {
-		// TODO
+	@SuppressWarnings("resource")
+	public ConvexHull(String inputFileName) throws FileNotFoundException, InputMismatchException {
+		//scan in the file, parse into point objects.
+        File file = new File(inputFileName);
+        //check for file
+        if(!file.exists()) throw new FileNotFoundException();
+		Scanner in = new Scanner(file);
+        
+        //grab up all the ints
+        ArrayList<Integer> temp = new ArrayList<Integer>();
+        while(in.hasNextInt()){
+        	temp.add(in.nextInt());
+        }
+        
+        //ensure we have enough ints
+        if(temp.size() % 2 != 0) throw new InputMismatchException();
+        
+        points = new Point[temp.size()/2];
+        
+        int j = 0;
+        for(int i = 0; i < temp.size()/2; i+=2){
+        	points[j] = new Point(temp.get(i), temp.get(i+1));
+        	j++;
+        }
+        
+        numPoints = points.length;
+        in.close();
+			
 	}
 
 	// -------------
@@ -155,8 +179,19 @@ public class ConvexHull {
 	 */
 	public void GrahamScan() {
 		// TODO
+		if(pointsToScan.length == 1){
+			hullVertices = pointsToScan;
+			numHullVertices = 1;
+		}
+		if(pointsToScan.length == 2){
+			//TODO
+			numHullVertices = 2;
+		}
 		lowestPoint();
 		setUpScan();
+		
+		
+		quickSort();
 	}
 
 	// ------------------------------------------------------------
@@ -235,8 +270,7 @@ public class ConvexHull {
 	 * 
 	 * Called only after setUpScan() or GrahamScan().
 	 * 
-	 * @throws IllegalStateException
-	 *             if pointsNoDuplicate[] has not been populated.
+	 * @throws IllegalStateException if pointsNoDuplicate[] has not been populated.
 	 */
 	public void pointsToFile() throws IllegalStateException {
 		// TODO
@@ -251,8 +285,7 @@ public class ConvexHull {
 	 * 
 	 * Called only after setUpScan() or GrahamScan().
 	 * 
-	 * @throws IllegalStateException
-	 *             if pointsToScan[] has not been populated.
+	 * @throws IllegalStateException if pointsToScan[] has not been populated.
 	 */
 	public void pointsScannedToFile() throws IllegalStateException {
 		// TODO
@@ -274,6 +307,7 @@ public class ConvexHull {
 	 * Ought to be private, but is made public for testing convenience.
 	 */
 	public void lowestPoint() {
+		//TODO test this
 		Point small = points[0];
 		for (int i = 1; i < points.length; i++) {
 			if (points[i].getY() < small.getY())
@@ -308,9 +342,11 @@ public class ConvexHull {
 	 *
 	 */
 	public void setUpScan() {
+		//TODO test this
 		quickSort();
 
-		// eliminate duplicaallocated worst case space for array
+		// eliminate duplicates
+		// allocated worst case space for array
 		pointsNoDuplicate = new Point[points.length];
 		pointsNoDuplicate[0] = points[0];
 		for (int i = 1; i < points.length; i++) {
@@ -381,4 +417,7 @@ public class ConvexHull {
 		return 0;
 	}
 
+	private void resize(Object[] array){
+		//removes any null values from the list, shrinks to fit only real values
+	}
 }
