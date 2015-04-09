@@ -13,6 +13,8 @@ public class GenericTests {
 		h.GrahamScan();
 		
 		h.hullToFile();
+		h.pointsToFile();
+		//h.pointsScannedToFile();
 		System.out.println(h.toString(1));
 		//System.out.println(h.toString(2));
 		System.out.println(h.toString());

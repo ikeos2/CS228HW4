@@ -213,7 +213,6 @@ public class ConvexHull {
 
 		// Graham's scan, as implemented at
 		// http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
-		//PointComparator t = new PointComparator(lowestPoint);
 		// push top 3 points to stack
 		vertexStack.push(pointsToScan[0]);
 		vertexStack.push(pointsToScan[1]);
@@ -262,7 +261,6 @@ public class ConvexHull {
 	 * lowestPoint is listed only ONCE.
 	 */
 	public String toString() {
-		// TODO: test this after grahams scan is finished
 		String out = "";
 		int count = 0;
 		while(count < numHullVertices){
@@ -350,25 +348,15 @@ public class ConvexHull {
 	 *             hull has not been constructed)
 	 */
 	public void hullToFile() throws IllegalStateException {
-		// TODO
 		if(numHullVertices < 1) throw new IllegalStateException();
 		
 		String out = "";
 		
 		for(Point E : hullVertices) out += (E.getX() + " " + E.getY() + " ");
+		//add the lowest point to the end
+		out += " " + lowestPoint.getX() + " " + lowestPoint.getY();
 
-		
-		PrintWriter toFile = null;
-		try {
-			toFile = new PrintWriter("hull.txt");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		toFile.println(out);
-		toFile.close();
-		
-		
-		
+		toFile(out, "hull.txt");
 	}
 
 	/**
@@ -385,7 +373,14 @@ public class ConvexHull {
 	 *             if pointsNoDuplicate[] has not been populated.
 	 */
 	public void pointsToFile() throws IllegalStateException {
-		// TODO
+		if(numDistinctPoints < 1) throw new IllegalStateException();
+		
+		String out = "";
+		
+		
+		for(Point E : pointsNoDuplicate) out += (E.getX() + " " + E.getY() + " ");
+		
+		toFile(out, "points.txt");
 	}
 
 	/**
@@ -401,7 +396,14 @@ public class ConvexHull {
 	 *             if pointsToScan[] has not been populated.
 	 */
 	public void pointsScannedToFile() throws IllegalStateException {
-		// TODO
+		// TODO: fix this
+		if(pointsToScan.length < 1) throw new IllegalStateException();
+		
+		String out = "";
+		
+		for(Point E : pointsToScan) out += (E.getX() + " " + E.getY() + " ");
+		
+		toFile(out, "pointsScanned.txt");
 	}
 
 	// ---------------
@@ -460,7 +462,6 @@ public class ConvexHull {
 	 *
 	 */
 	public void setUpScan() {
-		// TODO test this
 		quickSort();
 
 		// eliminate duplicates
@@ -540,7 +541,6 @@ public class ConvexHull {
 	 * @param last
 	 *            ending index of the subarray
 	 */
-	@SuppressWarnings("unused")
 	private void quickSortRec(int first, int last) {
 		quicksort( first,  last);
 	}
@@ -595,6 +595,17 @@ public class ConvexHull {
 			array[i] = list.get(i);
 		}
 
+	}
+	
+	private void toFile(String content, String filename){
+		PrintWriter file = null;
+		try {
+			file = new PrintWriter(filename);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		file.println(content);
+		file.close();
 	}
 
 }
