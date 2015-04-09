@@ -483,19 +483,17 @@ public class ConvexHull {
 		}
 		numDistinctPoints = pointsNoDuplicate.length;
 
-		//resize(pointsNoDuplicate);
+		resize(pointsNoDuplicate);
 
 		PointComparator t = new PointComparator(lowestPoint);
 		// allocate worst case space for array
 		pointsToScan = new Point[pointsNoDuplicate.length];
 		// eliminate duplicate angle points
 		for (int i = 0; i < pointsNoDuplicate.length - 1; i++) {
-			if (t.comparePolarAngle(pointsNoDuplicate[i],
-					pointsNoDuplicate[i + 1]) == 0) {
+			if (t.comparePolarAngle(pointsNoDuplicate[i], pointsNoDuplicate[i + 1]) == 0) {
 				// The angle is the same, keep only the one with the greater
 				// distance
-				if (t.compareDistance(pointsNoDuplicate[i],
-						pointsNoDuplicate[i + 1]) < 0) {
+				if (t.compareDistance(pointsNoDuplicate[i], pointsNoDuplicate[i + 1]) < 0) {
 					// point 1 is closer, keep point 2
 					pointsToScan[i] = pointsNoDuplicate[i + 1];
 					i++;
@@ -508,12 +506,11 @@ public class ConvexHull {
 				// Different angles
 				pointsToScan[i] = pointsNoDuplicate[i];
 			}
-
-			//resize(pointsToScan);
-			
-			//pointsNoDuplicate[0] = lowestPoint;
-			numPointsToScan = pointsToScan.length;
 		}
+		resize(pointsToScan);
+		
+		//pointsNoDuplicate[0] = lowestPoint;
+		numPointsToScan = pointsToScan.length;
 	}
 
 	/**
@@ -584,24 +581,41 @@ public class ConvexHull {
 		return i;
 	}
 
-	public void resize(Object[] array) {
+	public void resize(Point[] array) {
 		// TODO Fix this, doesn't resize arrays
 		// removes any null values from the list, shrinks to fit only real values
 		if (array == null)
 			return;
-		if (array.length == 1)
-			return;
 
-		ArrayList<Object> list = new ArrayList<Object>();
+		 ArrayList<Point> list = new ArrayList<Point>();
+		 for(Point E : array){
+			 if( E != null){
+				 list.add(E);
+			 }
+		 }
+		 Point[] tmp = list.toArray(new Point[list.size()]);
+		 array = tmp;
 		
-		for (int i = 0; i < array.length; i++) {
-			if (array[i] != null) list.add(array[i]);
-		}
-
-		for(int i = 0; i < list.size(); i++){
-			array[i] = list.get(i);
-		}
-
+//		int count = 0; //number of real values
+//		Point[] vals = new Point[array.length];
+//		
+//		//put all the non-null values in a new array
+//		for(Point E : array){
+//			if(null == E){
+//				//do nothing!
+//			} else {
+//				vals[count] = E;
+//				count++;
+//			}
+//		}
+//		
+//		//then resize the given array and repopulate it
+//		array = new Point[count];
+//		
+//		for(int i = 0; i < count; i++){
+//			array[i] = vals[i];
+//		}
+		
 	}
 	
 	/**
