@@ -108,6 +108,25 @@ public class PointComparator implements Comparator<Point>
     
     
     /**
+     * Functions identically to the default, but uses a custom 3 point instead of ref point
+     * @param p1
+     * @param p2
+     * @return
+     */
+    public int comparePolarAngle(Point p1, Point p2, Point ref) 
+    {
+    	float q0 = (p1.getX() - ref.getX()) * (p2.getY() - ref.getY());
+    	float q1 = (p2.getX() - ref.getX()) * (p1.getY() - ref.getY());
+    	
+    	//for p1 angle < p2 angle return -1
+    	//for p1 angle > p2 angle return 1
+    	if(q0 < q1 || p2 == referencePoint) return 1;
+    	if(q1 < q0 || p1 == referencePoint) return -1;
+    	return 0; 
+    }
+    
+    
+    /**
      * Compare the distances of two points p1 and p2 to referencePoint.  Use dot products. 
      * Do not take square roots. 
      * 

@@ -25,6 +25,7 @@ import java.util.Scanner;
  *
  */
 
+@SuppressWarnings("unused")
 public class ConvexHull {
 	// ---------------
 	// Data Structures
@@ -102,6 +103,16 @@ public class ConvexHull {
 		}
 
 		numPoints = n;
+	}
+	
+	
+	/**
+	 * Creates a convex hull based on given input, mostly for debugging purposes
+	 * @param given array of points to be used
+	 */
+	public ConvexHull(Point[] given) {
+		points = given;
+		numPoints = given.length;
 	}
 
 	/**
@@ -187,21 +198,22 @@ public class ConvexHull {
 	 * segment connecting them.
 	 */
 	public void GrahamScan() {
-		// TODO
+		vertexStack = new ArrayBasedStack<Point>();
+		lowestPoint();
+		setUpScan();
+		
 		if (pointsToScan.length == 1) {
 			hullVertices = pointsToScan;
 			numHullVertices = 1;
 		}
 		if (pointsToScan.length == 2) {
-			// TODO
+			hullVertices = pointsToScan;
 			numHullVertices = 2;
 		}
-		lowestPoint();
-		setUpScan();
 
 		// Graham's scan, as implemented at
 		// http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
-		PointComparator t = new PointComparator(lowestPoint);
+		//PointComparator t = new PointComparator(lowestPoint);
 		// push top 3 points to stack
 		vertexStack.push(pointsToScan[0]);
 		vertexStack.push(pointsToScan[1]);
@@ -211,12 +223,25 @@ public class ConvexHull {
 			// Keep removing top while the angle formed by points next-to-top,
 			// top, and points[i] makes a non-left turn
 			// while(angle is
+			//TODO: change this to use comparator
 			while (orientation(nextToTop(), vertexStack.peek(), points[i]) != 2)
 				vertexStack.pop();
 			vertexStack.push(points[i]);
 		}
-
-		quickSort();
+		//****End Grahams Scan
+		
+		//push all the Points back into our hullVertices array
+		hullVertices = new Point[vertexStack.size()];
+		for(int i = vertexStack.size() - 1; i > 0; i--){
+			hullVertices[i] = vertexStack.pop();
+		}
+		
+		//for some reason this particular point gets lost
+		//TODO: fix this
+		hullVertices[0] = lowestPoint;
+		
+		numHullVertices = hullVertices.length;
+		//quickSort();
 	}
 
 	// ------------------------------------------------------------
@@ -237,14 +262,32 @@ public class ConvexHull {
 	 * lowestPoint is listed only ONCE.
 	 */
 	public String toString() {
-		// TODO
+		// TODO: test this after grahams scan is finished
 		String out = "";
+		int count = 0;
+		while(count < numHullVertices){
+			for(int i = 0; i < 5; i++){
+				out += (hullVertices[count] + "   ");
+				//incase we have a power not of 5
+				count++;
+				if(count >= numHullVertices) return out;
+			}
+			out+=("\n"); //new line every 5
+		}
 
 		return out;
 	}
 
+	/**
+	 * Basically functions a static comparator
+	 *
+	 * @param p point 1
+	 * @param q point 2
+	 * @param r ref point
+	 * @return 
+	 */
 	// from http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
-	int orientation(Point p, Point q, Point r) {
+	public int orientation(Point p, Point q, Point r) {
 		int val = (q.getY() - p.getY()) * (r.getX() - q.getX())
 				- (q.getX() - p.getX()) * (r.getY() - q.getY());
 
@@ -253,14 +296,29 @@ public class ConvexHull {
 		return (val > 0) ? 1 : 2; // clock or counterclock wise
 	}
 
+	/**
+	 * Stores result of pop, then peek, pushes original pop back on
+	 * @return the point below top
+	 */
+	public Point nextToTop(){
+		Point tmp = vertexStack.pop();
+		Point val = vertexStack.peek();
+		vertexStack.push(tmp);
+		return val;
+	}
+	
 	public String toString(int i) {
-		// DEBUG
+		// for DEBUG
 		String out = "";
 
 		if (i == 1) {
 			for (Point E : points) {
 				System.out.print(E + " ");
 			}
+		}
+		if(i == 2){
+			for(Point E : hullVertices)
+				System.out.print(E + " ");
 		}
 
 		return out;
@@ -293,6 +351,24 @@ public class ConvexHull {
 	 */
 	public void hullToFile() throws IllegalStateException {
 		// TODO
+		if(numHullVertices < 1) throw new IllegalStateException();
+		
+		String out = "";
+		
+		for(Point E : hullVertices) out += (E.getX() + " " + E.getY() + " ");
+
+		
+		PrintWriter toFile = null;
+		try {
+			toFile = new PrintWriter("hull.txt");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		toFile.println(out);
+		toFile.close();
+		
+		
+		
 	}
 
 	/**
@@ -344,7 +420,6 @@ public class ConvexHull {
 	 * Ought to be private, but is made public for testing convenience.
 	 */
 	public void lowestPoint() {
-		// TODO test this
 		Point small = points[0];
 		for (int i = 1; i < points.length; i++) {
 			if (points[i].getY() < small.getY())
@@ -360,6 +435,12 @@ public class ConvexHull {
 		}
 
 		lowestPoint = small;
+	}
+	
+	
+	public Point lowestPoint(int i) {
+		lowestPoint();
+		return lowestPoint;
 	}
 
 	/**
@@ -393,8 +474,9 @@ public class ConvexHull {
 				pointsNoDuplicate[i] = points[i];
 			}
 		}
+		numDistinctPoints = pointsNoDuplicate.length;
 
-		resize(pointsNoDuplicate);
+		//resize(pointsNoDuplicate);
 
 		PointComparator t = new PointComparator(lowestPoint);
 		// allocate worst case space for array
@@ -420,7 +502,7 @@ public class ConvexHull {
 				pointsToScan[i] = pointsNoDuplicate[i];
 			}
 
-			resize(pointsToScan);
+			//resize(pointsToScan);
 
 			numPointsToScan = pointsToScan.length;
 		}
@@ -435,39 +517,20 @@ public class ConvexHull {
 	 * Ought to be private, but is made public for testing convenience.
 	 */
 	public void quickSort() {
-		//TODO
-		int right = points.length;
 		int left = 0;
-		Object[] a = points;
-		quicksort(a,left,right);
+		int right = points.length-1;
+		quicksort(left, right);
+
+	}
+	public void quicksort(int left, int right){
+		int index = partition(left,right);
+		if(left < index - 1)
+			quicksort(left,index-1);
+		if(index < right)
+			quicksort(index, right);
+
 	}
 
-	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
-	public void quicksort(Object[] a, int left, int right) {
-		int size = right - left + 1;
-		switch (size) {
-		case 0:
-		case 1:
-			break;
-		case 2:
-			if (compare(a[left], a[right]) > 0)
-				swap(a, left, right);
-			break;
-		case 3:
-			if (compare(a[left], a[right - 1]) > 0)
-				swap(a, left, right - 1);
-			if (compare(a[left], a[right]) > 0)
-				swap(a, left, right);
-			if (compare(a[left + 1], a[right]) > 0)
-				swap(a, left + 1, right);
-			break;
-		default:
-			int median = median(a, left, right);
-			int partition = partition(a, left, right, median);
-			quicksort(a, left, partition - 1);
-			quicksort(a, partition + 1, right);
-		}
-	}
 
 	/**
 	 * Operates on the subarray of points[] with indices between first and last.
@@ -477,8 +540,9 @@ public class ConvexHull {
 	 * @param last
 	 *            ending index of the subarray
 	 */
+	@SuppressWarnings("unused")
 	private void quickSortRec(int first, int last) {
-		// TODO
+		quicksort( first,  last);
 	}
 
 	/**
@@ -488,82 +552,49 @@ public class ConvexHull {
 	 * @param last
 	 * @return
 	 */
-	private int partition(int first, int last) {
-		// TODO
-		partition(points, 0, points.length, points.length / 2);
-		return 0;
-	}
-
-	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
-	private int partition(Object[] a, int left, int right, int pivotIndex) {
-		int leftIndex = left;
-		int rightIndex = right - 1;
-		while (true) {
-			while (compare(a[++leftIndex], a[pivotIndex]) < 0)
-				;
-			while (compare(a[--rightIndex], a[pivotIndex]) > 0)
-				;
-			if (leftIndex >= rightIndex) {
-				break; // pointers cross so partition done
-			} else {
-				swap(a, leftIndex, rightIndex);
+	private int partition(int left, int right) {
+		int i = left, j = right;
+		PointComparator t = new PointComparator(lowestPoint);
+		Point tmp;
+		Point pivot = points[(left+right)/2];
+		
+		while(i <= j){
+			while(t.compare(points[i], pivot) == -1)
+				i++;
+			while(t.compare(points[j], pivot) == 1)
+				j--;
+			if(i <= j){
+				tmp = points[i];
+				points[i] = points[j];
+				points[j] = tmp;
+				i++;
+				j--;
 			}
+				
 		}
-		swap(a, leftIndex, right - 1); // restore pivot
-		return leftIndex; // return pivot location
+		
+		
+		return i;
 	}
 
-	private void resize(Object[] array) {
-		// TODO test this
-		// removes any null values from the list, shrinks to fit only real
-		// values
+	public void resize(Object[] array) {
+		// TODO Fix this, doesn't resize arrays
+		// removes any null values from the list, shrinks to fit only real values
 		if (array == null)
 			return;
 		if (array.length == 1)
 			return;
 
 		ArrayList<Object> list = new ArrayList<Object>();
+		
 		for (int i = 0; i < array.length; i++) {
-			if (array[i] != null) {
-				list.add(array[i]);
-			}
+			if (array[i] != null) list.add(array[i]);
 		}
-		array = list.toArray(new Point[list.size()]);
+
+		for(int i = 0; i < list.size(); i++){
+			array[i] = list.get(i);
+		}
 
 	}
 
-	// A utility function to find next to top in a stack
-	// from http://www.geeksforgeeks.org/convex-hull-set-2-graham-scan/
-	Point nextToTop() {
-		Point p = vertexStack.peek();
-		vertexStack.pop();
-		Point res = vertexStack.peek();
-		vertexStack.push(p);
-		return res;
-	}
-
-	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
-	private void swap(Object array[], int left, int right) {
-		Object c = array[left];
-		array[left] = array[right];
-		array[right] = c;
-	}
-
-	private int compare(Object a, Object b) {
-		PointComparator t = new PointComparator(lowestPoint);
-		return t.compare((Point) a, (Point) b);
-	}
-
-	// http://www.java2s.com/Code/Java/Collections-Data-Structure/Quicksortimplementationforsortingarrays.htm
-	private int median(Object[] a, int left, int right) {
-		int center = (left + right) / 2;
-		if (compare(a[left], a[center]) > 0)
-			swap(a, left, center);
-		if (compare(a[left], a[right]) > 0)
-			swap(a, left, right);
-		if (compare(a[center], a[right]) > 0)
-			swap(a, center, right);
-		swap(a, center, right - 1);
-		return right - 1;
-	}
 }
