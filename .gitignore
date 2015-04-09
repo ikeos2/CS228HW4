@@ -58,3 +58,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 /bin/
+
+# Arbitrary test files
+*.txt

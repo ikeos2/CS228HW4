@@ -236,9 +236,8 @@ public class ConvexHull {
 		}
 		
 		//for some reason this particular point gets lost
-		//TODO: fix this
 		hullVertices[0] = lowestPoint;
-		
+		pointsToScan[0] = lowestPoint;
 		numHullVertices = hullVertices.length;
 		//quickSort();
 	}
@@ -396,12 +395,15 @@ public class ConvexHull {
 	 *             if pointsToScan[] has not been populated.
 	 */
 	public void pointsScannedToFile() throws IllegalStateException {
-		// TODO: fix this
 		if(pointsToScan.length < 1) throw new IllegalStateException();
 		
 		String out = "";
 		
-		for(Point E : pointsToScan) out += (E.getX() + " " + E.getY() + " ");
+		//for(Point E : pointsToScan) out += (E.getX() + " " + E.getY() + " ");
+		for(int i = 0; i < pointsToScan.length; i++){
+			if(pointsToScan[i] == null) break;
+			out += pointsToScan[i].getX() + " " + pointsToScan[i].getY() + " ";
+		}
 		
 		toFile(out, "pointsScanned.txt");
 	}
@@ -439,7 +441,11 @@ public class ConvexHull {
 		lowestPoint = small;
 	}
 	
-	
+	/**
+	 * Debugging lowestPoint function
+	 * @param i
+	 * @return
+	 */
 	public Point lowestPoint(int i) {
 		lowestPoint();
 		return lowestPoint;
@@ -504,7 +510,8 @@ public class ConvexHull {
 			}
 
 			//resize(pointsToScan);
-
+			
+			//pointsNoDuplicate[0] = lowestPoint;
 			numPointsToScan = pointsToScan.length;
 		}
 	}
@@ -597,6 +604,11 @@ public class ConvexHull {
 
 	}
 	
+	/**
+	 * Outputs the input to a file with a chosen name
+	 * @param content the contents of the file
+	 * @param filename the of the file you wish to create/overwrite
+	 */
 	private void toFile(String content, String filename){
 		PrintWriter file = null;
 		try {
