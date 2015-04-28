@@ -5,6 +5,12 @@ import edu.iastate.cs228.hw4.*;
 
 import org.junit.Test;
 
+/**
+ * 
+ * @author Alex Orman
+ *
+ */
+
 public class ConvexHullTest {
 
 	@Test

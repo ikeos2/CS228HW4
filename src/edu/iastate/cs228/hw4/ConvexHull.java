@@ -202,13 +202,10 @@ public class ConvexHull {
 		lowestPoint();
 		setUpScan();
 		
-		if (pointsToScan.length == 1) {
+		if (pointsToScan.length < 3) {
 			hullVertices = pointsToScan;
-			numHullVertices = 1;
-		}
-		if (pointsToScan.length == 2) {
-			hullVertices = pointsToScan;
-			numHullVertices = 2;
+			numHullVertices = pointsToScan.length;
+			return;
 		}
 
 		// Graham's scan, as implemented at
@@ -218,12 +215,14 @@ public class ConvexHull {
 		vertexStack.push(pointsToScan[1]);
 		vertexStack.push(pointsToScan[2]);
 
+		PointComparator t = new PointComparator(lowestPoint);
 		for (int i = 3; i < pointsToScan.length; i++) {
 			// Keep removing top while the angle formed by points next-to-top,
 			// top, and points[i] makes a non-left turn
 			// while(angle is
 			//TODO: change this to use comparator
-			while (orientation(nextToTop(), vertexStack.peek(), points[i]) != 2)
+			//while (orientation(nextToTop(), vertexStack.peek(), points[i]) != 2)
+			while (t.comparePolarAngle(nextToTop(), points[i], vertexStack.peek()) != -1)
 				vertexStack.pop();
 			vertexStack.push(points[i]);
 		}
@@ -483,7 +482,7 @@ public class ConvexHull {
 		}
 		numDistinctPoints = pointsNoDuplicate.length;
 
-		resize(pointsNoDuplicate);
+		pointsNoDuplicate = resize(pointsNoDuplicate);
 
 		PointComparator t = new PointComparator(lowestPoint);
 		// allocate worst case space for array
@@ -507,7 +506,8 @@ public class ConvexHull {
 				pointsToScan[i] = pointsNoDuplicate[i];
 			}
 		}
-		resize(pointsToScan);
+		
+		pointsToScan = resize(pointsToScan);
 		
 		//pointsNoDuplicate[0] = lowestPoint;
 		numPointsToScan = pointsToScan.length;
@@ -581,40 +581,27 @@ public class ConvexHull {
 		return i;
 	}
 
-	public void resize(Point[] array) {
+	public Point[] resize(Point[] array) {
 		// TODO Fix this, doesn't resize arrays
 		// removes any null values from the list, shrinks to fit only real values
 		if (array == null)
-			return;
-
-		 ArrayList<Point> list = new ArrayList<Point>();
-		 for(Point E : array){
-			 if( E != null){
-				 list.add(E);
-			 }
-		 }
-		 Point[] tmp = list.toArray(new Point[list.size()]);
-		 array = tmp;
+			return null;
 		
-//		int count = 0; //number of real values
-//		Point[] vals = new Point[array.length];
-//		
-//		//put all the non-null values in a new array
-//		for(Point E : array){
-//			if(null == E){
-//				//do nothing!
-//			} else {
-//				vals[count] = E;
-//				count++;
-//			}
-//		}
-//		
-//		//then resize the given array and repopulate it
-//		array = new Point[count];
-//		
-//		for(int i = 0; i < count; i++){
-//			array[i] = vals[i];
-//		}
+		Point[] tmp = new Point[array.length];
+		int count = 0;
+		
+		//check for non null values
+		for(int i = 0; i < array.length-1;i++){
+			if(array[i] != null){
+				tmp[count++] = array[i];
+			}
+		}
+		
+		//resize the original array and 
+		array = new Point[count];
+		for(int i = 0; i < count; i++) array[i] = tmp[i];
+		
+		return array;
 		
 	}
 	

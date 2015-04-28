@@ -64,7 +64,6 @@ public class PointComparator implements Comparator<Point>
 	 */
 	public int compare(Point p1, Point p2)
 	{
-		// TODO
 		if(p1.equals(p2)) return 0; //0 case
 		if(p1.equals(referencePoint)) return -1; //-1a case
 		if(p2.equals(referencePoint)) return 1; //1a case
